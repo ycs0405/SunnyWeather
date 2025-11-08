@@ -9,6 +9,7 @@ import retrofit2.await
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.ln
 
 //object SunnyWeatherNetwork {
 //    private val placeService = ServiceCreator.create<PlaceService>()
@@ -30,32 +31,30 @@ import kotlin.coroutines.suspendCoroutine
 //    }
 //}
 
-object SunnyWeatherNetwork{
-    private val placeService = ServiceCreator.create<PlaceService>()
+// 网络数据源访问入口
+object SunnyWeatherNetwork {
+    private val placeService = ServiceCreator.create(PlaceService::class.java)
+    private val weatherService = ServiceCreator.create(WeatherService::class.java)
 
-    suspend fun searchPlaces(query:String) = placeService.searchPlaces(query).await()
+    suspend fun getDailyWeather(lng: String, lat: String) = weatherService.getDailyWeather(lng, lat).await()
+    suspend fun getRealtimeWeather(lng: String, lat: String) = weatherService.getRealtimeWeather(lng, lat).await()
+    suspend fun searchPlaces(query: String) = placeService.searchPlaces(query).await()
 
-    private suspend fun <T> Call<T>.await() : T {
+    private suspend fun <T> Call<T>.await(): T {
         return suspendCoroutine { continuation ->
-           // enqueue(): 发起异步请求，挂起协程
-           enqueue(object : Callback<T>{
-               override fun onResponse(call: Call<T>, response: Response<T>) {
-                   val body = response.body()
-                   if(body != null){
-                       Log.d("YCS", "enqueue onResponse body: ${body}")
-                       // 请求完成，恢复协程
-                       continuation.resume(body)
-                   }else{
-                       continuation.resumeWithException(RuntimeException("response body is null"))
-                   }
-               }
+            enqueue(object : Callback<T> {
+                override fun onResponse(call: Call<T>, response: Response<T>) {
+                    val body = response.body()
+                    Log.d("YCS", "onResponse: body:${body}")
+                    if (body != null) continuation.resume(body)
+                    else continuation.resumeWithException(RuntimeException("aaa response body is null"))
+                }
 
-               override fun onFailure(call: Call<T>, t: Throwable) {
-                   // 请求失败，抛出异常
-                   continuation.resumeWithException(t)
-               }
-
-           })
+                override fun onFailure(call: Call<T>, t: Throwable) {
+                    continuation.resumeWithException(t)
+                }
+            })
         }
     }
+
 }

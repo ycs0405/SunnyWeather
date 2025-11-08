@@ -14,16 +14,17 @@ import retrofit2.create
 //    inline fun <reified T> create(): T = create(T::class.java)
 //}
 
-object ServiceCreator{
-    private const val BASE_URL = "https://api.caiyunapp.com"
+object ServiceCreator {
+
+    private const val BASE_URL = "https://api.caiyunapp.com/"
+
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    // 创建服务类
-    fun <T> create(serviceClass:Class<T>) : T = retrofit.create<T>(serviceClass)
+    fun <T> create(serviceClass: Class<T>): T = retrofit.create(serviceClass)
 
-    // 使用泛型实化的方式创建服务类
-    inline fun <reified T> create():T = create(T::class.java)
+    inline fun <reified T> create(): T = create(T::class.java)
+
 }
